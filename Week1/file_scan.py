@@ -59,14 +59,32 @@ def scan_file(input_path: Path, report_path: Path) -> int:
 
 
 def main():
-    print("🔎 Simple Log Scanner")
+    print("🔎 Directory Log Scanner")
 
-    user_path = input("Enter file path to scan (example: Week1/sample_log.txt): ").strip()
+    folder = input("Enter folder to scan (example: Week1): ").strip()
+    folder_path = Path(folder)
 
-    input_path = Path(user_path)
     report_path = Path("Week1") / "reports" / "scan_report.txt"
 
-    scan_file(input_path, report_path)
+    if not folder_path.exists() or not folder_path.is_dir():
+        print(f"❌ Not a folder: {folder_path}")
+        return
+
+    total_matches = 0
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Clear old report and start fresh
+    report_path.write_text(f"Scan report for folder: {folder_path}\n" + ("-" * 60) + "\n", encoding="utf-8")
+
+    # Scan every file in the folder (recursively)
+    for file_path in folder_path.rglob("*"):
+        if file_path.is_file():
+            matches = scan_file(file_path, report_path)
+            total_matches += matches
+
+    print(f"✅ Folder scan complete. Total matches: {total_matches}")
+    print(f"📝 Combined report saved to: {report_path}")
+
 
 
 
