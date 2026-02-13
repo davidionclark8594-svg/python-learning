@@ -11,6 +11,17 @@ KEYWORDS = [
     "apikey",
     "api key",
 ]
+SEVERITY_MAP={
+    "password":"HIGH",
+    "token":"HIGH",
+    "apikey":"HIGH",
+    "api_key":"HIGH",
+    "secret":"HIGH",
+    "xss":"HIGH",
+    "sql":"MEDIUM",
+    "injection":"MEDIUM",
+    "admin":"LOW",
+}
 
 
 def scan_file(input_path: Path, report_path: Path) -> int:
@@ -26,10 +37,14 @@ def scan_file(input_path: Path, report_path: Path) -> int:
     lines = input_path.read_text(encoding="utf-8", errors="ignore").splitlines()
 
     for i, line in enumerate(lines, start=1):
-        lower = line.lower()
-        for kw in KEYWORDS:
-            if kw in lower:
-                matches.append((i, kw, line.strip()))
+            lower = line.lower()
+
+    for kw in KEYWORDS:
+        if kw in lower:
+            severity = SEVERITY_MAP.get(kw, "UNKNOWN")
+            matches.append((i, kw, severity, line.strip()))
+
+                
 
     # Build report text
     report_lines = []

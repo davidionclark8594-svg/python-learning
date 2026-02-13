@@ -1,14 +1,4 @@
 Scan report for: Week1/src/file_scan.py
 Keywords: password, token, sql, injection, xss, admin, secret, apikey, api key
 ------------------------------------------------------------
-⚠️ Matches found: 9
-
-Line   4 | keyword='password' | "password",
-Line   5 | keyword='token' | "token",
-Line   6 | keyword='sql' | "sql",
-Line   7 | keyword='injection' | "injection",
-Line   8 | keyword='xss' | "xss",
-Line   9 | keyword='admin' | "admin",
-Line  10 | keyword='secret' | "secret",
-Line  11 | keyword='apikey' | "apikey",
-Line  12 | keyword='api key' | "api key",
+✅ No matches found.
