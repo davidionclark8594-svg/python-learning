@@ -1,4 +1,10 @@
-Scan report for: Week1/src/file_scan.py
+Scan report for: /Users/davidionclarksr./python-projects/learning/Week1/data/Sample_log.txt
 Keywords: password, token, sql, injection, xss, admin, secret, apikey, api key
 ------------------------------------------------------------
-✅ No matches found.
+⚠️ Matches found: 5
+Line   2 | HIGH    | password   | WARN Failed password attempt user=bob ip=10.0.0.9
+Line   3 | MEDIUM  | sql        | ERROR SQL injection attempt detected: ' OR 1=1 --
+Line   5 | HIGH    | token      | WARN admin token exposed: ghp_exampletoken
+Line   6 | MEDIUM  | xss        | ERROR XSS payload: <script>alert(1)</script>
+Line   8 | HIGH    | password   | admin password is secret
+

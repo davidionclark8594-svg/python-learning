@@ -11,97 +11,83 @@ KEYWORDS = [
     "apikey",
     "api key",
 ]
-SEVERITY_MAP={
-    "password":"HIGH",
-    "token":"HIGH",
-    "apikey":"HIGH",
-    "api_key":"HIGH",
-    "secret":"HIGH",
-    "xss":"HIGH",
-    "sql":"MEDIUM",
-    "injection":"MEDIUM",
-    "admin":"LOW",
+
+SEVERITY_MAP = {
+    "password": "HIGH",
+    "token": "HIGH",
+    "apikey": "HIGH",
+    "api key": "HIGH",
+    "sql": "MEDIUM",
+    "injection": "MEDIUM",
+    "xss": "MEDIUM",
+    "admin": "LOW",
+    "secret": "HIGH",
 }
 
+def scan_file(input_path: Path):
+    """Return a list of matches: (line_no, keyword, severity, line_text)."""
+    if not input_path.exists() or not input_path.is_file():
+        return []
 
-def scan_file(input_path: Path, report_path: Path) -> int:
-    """
-    Scans a file for keywords and writes a report.
-    Returns number of matches found.
-    """
-    if not input_path.exists():
-        print(f"❌ File not found: {input_path}")
-        return 0
+    try:
+        lines = input_path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    except Exception:
+        return []
 
     matches = []
-    lines = input_path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    for line_no, line in enumerate(lines, start=1):
+        lower = line.lower()
+        for kw in KEYWORDS:
+            if kw in lower:
+                severity = SEVERITY_MAP.get(kw, "UNKNOWN")
+                matches.append((line_no, kw, severity, line.strip()))
+                break  # only count 1 keyword per line
 
-    for i, line in enumerate(lines, start=1):
-            lower = line.lower()
-
-    for kw in KEYWORDS:
-        if kw in lower:
-            severity = SEVERITY_MAP.get(kw, "UNKNOWN")
-            matches.append((i, kw, severity, line.strip()))
-
-                
-
-    # Build report text
-    report_lines = []
-    report_lines.append(f"Scan report for: {input_path}")
-    report_lines.append(f"Keywords: {', '.join(KEYWORDS)}")
-    report_lines.append("-" * 60)
-
-    if not matches:
-        report_lines.append("✅ No matches found.")
-    else:
-        report_lines.append(f"⚠️ Matches found: {len(matches)}")
-        report_lines.append("")
-        for line_no, kw, text in matches:
-            report_lines.append(f"Line {line_no:>3} | keyword='{kw}' | {text}")
-
-    report_text = "\n".join(report_lines) + "\n"
-
-    # Ensure report folder exists and write report
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(report_text, encoding="utf-8")
-
-    # Print short summary
-    print(f"✅ Done. Matches: {len(matches)}")
-    print(f"📝 Report saved to: {report_path}")
-
-    return len(matches)
-
+    return matches
 
 def main():
-    print("🔎 Directory Log Scanner")
+    print("🧠 Directory Log Scanner")
 
-    folder = input("Enter folder to scan (example: Week1): ").strip()
-    folder_path = Path(folder)
+    # Base dir = Week1 (because this file is Week1/src/file_scan.py)
+    base_dir = Path(__file__).resolve().parents[1]
 
-    report_path = Path("Week1") / "reports" / "scan_report.txt"
+    folder = input("Enter folder to scan (blank = data): ").strip()
+    folder = folder if folder else "data"
+
+    folder_path = (base_dir / folder).resolve()
+    report_path = (base_dir / "Reports" / "scan_report.txt").resolve()
 
     if not folder_path.exists() or not folder_path.is_dir():
         print(f"❌ Not a folder: {folder_path}")
         return
 
-    total_matches = 0
     report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text("", encoding="utf-8")  # clear report
 
-    # Clear old report and start fresh
-    report_path.write_text(f"Scan report for folder: {folder_path}\n" + ("-" * 60) + "\n", encoding="utf-8")
+    total_matches = 0
 
-    # Scan every file in the folder (recursively)
     for file_path in folder_path.rglob("*"):
-        if file_path.is_file():
-            matches = scan_file(file_path, report_path)
-            total_matches += matches
+        if not file_path.is_file():
+            continue
+
+        matches = scan_file(file_path)
+        total_matches += len(matches)
+
+        with report_path.open("a", encoding="utf-8") as f:
+            f.write(f"Scan report for: {file_path}\n")
+            f.write(f"Keywords: {', '.join(KEYWORDS)}\n")
+            f.write("-" * 60 + "\n")
+
+            if not matches:
+                f.write("✅ No matches found.\n\n")
+            else:
+                f.write(f"⚠️ Matches found: {len(matches)}\n")
+                for line_no, kw, severity, text in matches:
+                    f.write(f"Line {line_no:>3} | {severity:<7} | {kw:<10} | {text}\n")
+                f.write("\n")
 
     print(f"✅ Folder scan complete. Total matches: {total_matches}")
-    print(f"📝 Combined report saved to: {report_path}")
-
-
-
+    print(f"📄 Combined report saved to: {report_path}")
 
 if __name__ == "__main__":
     main()
